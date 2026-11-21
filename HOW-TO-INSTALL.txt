@@ -1,0 +1,156 @@
+=====================================================================
+  AEROX LITE FOR WINDOWS - STEP BY STEP GUIDE
+  For the SteelSeries Aerox 3 Wireless mouse
+=====================================================================
+
+Aerox Lite is a small free program that replaces SteelSeries GG.
+It lets you change the mouse sensitivity, lighting, buttons and more,
+and shows the battery level next to the clock.
+
+
+---------------------------------------------------------------------
+STEP 1. CLOSE STEELSERIES GG (IMPORTANT)
+---------------------------------------------------------------------
+
+SteelSeries GG fights with Aerox Lite over the mouse settings.
+
+  1. Look at the bottom-right corner of the screen, next to the clock.
+  2. Click the small arrow ( ^ ) to see the hidden icons.
+  3. Right-click the SteelSeries GG icon and choose "Exit".
+  4. Optional but recommended: stop GG from starting with Windows.
+     Press Ctrl + Shift + Esc, open the "Startup apps" tab,
+     right-click SteelSeries GG and choose "Disable".
+
+
+---------------------------------------------------------------------
+STEP 2. PUT THE PROGRAM IN A FOLDER
+---------------------------------------------------------------------
+
+  1. Create a folder for it, for example:  C:\Programs\AeroxLite
+  2. Move AeroxLite.exe into that folder.
+
+  Keep it there. If you move the file later, turn
+  "Start with Windows" off and on again (see step 6).
+
+
+---------------------------------------------------------------------
+STEP 3. CONNECT THE MOUSE
+---------------------------------------------------------------------
+
+  Use either:
+    - the wireless USB dongle (2.4 GHz), or
+    - the USB cable.
+
+  Turn the mouse on (switch on the bottom set to 2.4 GHz).
+
+
+---------------------------------------------------------------------
+STEP 4. START THE PROGRAM
+---------------------------------------------------------------------
+
+  1. Double-click AeroxLite.exe.
+
+  2. Windows may show a blue window: "Windows protected your PC".
+     This happens because the program is free and not signed.
+     Click "More info", then click "Run anyway".
+
+  3. The Aerox Lite window opens. At the top right you should see
+     something like:  "● 2.4 GHz · 85%"
+     That means the mouse is connected and shows its battery level.
+
+  If it says "mouse not found", see TROUBLESHOOTING at the end.
+
+
+---------------------------------------------------------------------
+STEP 5. CHANGE YOUR SETTINGS
+---------------------------------------------------------------------
+
+The window has three tabs in the middle: Settings, Lighting, Modules.
+Changes are applied to the mouse right away.
+
+  SETTINGS tab
+    - SENSITIVITY LEVELS (CPI): click a level (LV. 1, LV. 2 ...) and
+      move the slider. "+" adds a level, "Remove level" deletes one.
+      The CPI button behind the scroll wheel switches between levels.
+    - POWER SAVING: when the mouse goes to sleep and when the
+      lighting dims.
+    - POLLING RATE: 1000 Hz is the smoothest, 500 Hz saves battery.
+
+  LIGHTING tab
+    - LIGHTING MODE: Static, Off, Rainbow, Breathing, Wave ...
+      Modes marked with * only work while Aerox Lite is running.
+    - ZONES: click a zone to pick its color.
+    - OPTIONS: brightness and effect speed.
+
+  BUTTONS (left side, "ACTIONS")
+    - Click the box next to a button and choose what it should do:
+      another button, a keyboard key, a media key, or a macro.
+    - "RESET BINDINGS" puts everything back to normal.
+
+  >>> When you are happy, click "SAVE TO MOUSE" (bottom right). <<<
+  This stores the settings inside the mouse, so they keep working
+  on any computer, even without Aerox Lite.
+
+
+---------------------------------------------------------------------
+STEP 6. EVERYDAY USE
+---------------------------------------------------------------------
+
+  - Closing the window does NOT quit the program. It keeps running
+    next to the clock and shows the battery level in the icon.
+  - Click that icon (or right-click -> "Open") to open the window.
+  - To quit completely: right-click the icon -> "Quit",
+    or click "QUIT" at the top of the window.
+  - Tick "Start with Windows" (bottom left) to start it
+    automatically every time you turn on the computer.
+
+
+---------------------------------------------------------------------
+EXTRAS (OPTIONAL)
+---------------------------------------------------------------------
+
+  MACROS - one button does a sequence of keys
+    1. Under ACTIONS, next to "Macro editor", click "OPEN".
+    2. Click "+ NEW", type the steps, click "SAVE".
+       The help on the right shows what you can type, for example:
+           ctrl+c
+           wait 50
+           ctrl+v
+    3. Close the editor. Click the box next to a mouse button and
+       choose Macros -> your macro.
+    4. Click "SAVE TO MOUSE".
+    Macros only work while Aerox Lite is running.
+
+  MODULES tab
+    - Multi-click: a quick press of the left or right button sends
+      2-6 clicks. Holding the button works normally.
+    - Smart battery: shows how many hours are left and saves battery
+      automatically when it drops below 25%.
+    - Directional sensitivity: needs the free Raw Accel driver
+      (github.com/a1xd/rawaccel). Click "RAW ACCEL FOLDER", then
+      "CALIBRATE", and follow the mini-game.
+
+
+---------------------------------------------------------------------
+TROUBLESHOOTING
+---------------------------------------------------------------------
+
+  "mouse not found"
+    - Make sure the mouse is switched on and the dongle is plugged in.
+    - Unplug the dongle, wait 5 seconds, plug it back in.
+    - Try another USB port or the cable.
+    - Make sure SteelSeries GG is closed (step 1).
+
+  Lighting changes back by itself
+    - SteelSeries GG is still running. Close it (step 1).
+
+  Settings are lost after restarting the computer
+    - You forgot to click "SAVE TO MOUSE".
+
+  The program does not start / nothing happens
+    - It may already be running: look for its icon next to the clock.
+
+  Still stuck?
+    - Open a new issue on the GitHub page of this project and attach
+      the log file:  %APPDATA%\AeroxLite\log.txt
+      (paste that path into the File Explorer address bar).

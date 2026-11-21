@@ -10,7 +10,9 @@ The device protocol is based on the open-source [rivalcfg](https://github.com/fl
 
 ## Download
 
-Get the prebuilt `AeroxLite.exe` from the **Releases** page. GitHub Actions builds it from this repository.
+> **New to this?** Follow [HOW-TO-INSTALL.txt](HOW-TO-INSTALL.txt), a simple step-by-step guide. It is also included in the download.
+
+Get `AeroxLite-windows.zip` (the program plus the guide) or just `AeroxLite.exe` from the **Releases** page. GitHub Actions builds both from this repository.
 
 ## Build from source
 

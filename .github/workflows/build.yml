@@ -35,15 +35,24 @@ jobs:
       - name: Build EXE
         run: python -X utf8 -m PyInstaller --clean --noconfirm AeroxLite.spec
 
+      - name: Package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force pkg/AeroxLite | Out-Null
+          Copy-Item dist/AeroxLite.exe, HOW-TO-INSTALL.txt, LICENSE pkg/AeroxLite/
+          Compress-Archive -Path pkg/AeroxLite -DestinationPath AeroxLite-windows.zip
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: AeroxLite
-          path: dist/AeroxLite.exe
+          name: AeroxLite-windows
+          path: AeroxLite-windows.zip
 
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/AeroxLite.exe
+          files: |
+            AeroxLite-windows.zip
+            dist/AeroxLite.exe
           body_path: CHANGELOG.md
