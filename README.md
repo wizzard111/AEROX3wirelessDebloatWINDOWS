@@ -49,6 +49,22 @@ A standalone `AeroxLite.exe` is attached to each release too. It runs without in
 
 Software lighting effects and macros work only while the app is running (in the tray). The static color and the hardware rainbow keep working without the app after **Save to mouse**.
 
+## Disk space, memory and CPU
+
+| | |
+|---|---|
+| Download | `AeroxLite-windows.zip` 12 MB, or the portable `AeroxLite.exe` 12 MB |
+| On disk after installing | 27 MB in `%LOCALAPPDATA%\Programs\AeroxLite`; settings a few KB; log files at most 1 MB |
+| Memory in the tray | 49 MB (29 MB of its own) |
+| Memory with the window open | 56 MB (35 MB of its own) |
+| CPU, in the tray or with the window open | about 0%: 16 ms of CPU time per minute |
+
+The window is built only when you open it, and the app sleeps until something happens (a setting, the
+mouse, a battery check every 30 s). Software lighting effects (breathing, wave, colour cycle) are the
+exception: they keep sending colours to the mouse while they run.
+
+*Measured on Windows 11 with an Aerox 3 Wireless connected (V5.0.1).*
+
 ## Project layout
 
 | Path | Contents |
