@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# PyInstaller output
+build/
+dist/
+*.exe
+
+# Local runtime data (config/logs live in %APPDATA%\AeroxLite, but just in case)
+config.json
+*.log
+log.txt
+
+# IDE / OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
