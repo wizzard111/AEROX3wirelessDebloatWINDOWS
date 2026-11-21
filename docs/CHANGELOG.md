@@ -78,6 +78,12 @@
   code page.
 - Every build is self-tested before it is packaged.
 
+### Size and resource use
+- Download: AeroxLite-windows.zip 12 MB, portable AeroxLite.exe 12 MB; 25 MB on disk after installing.
+- Memory: 49 MB in the tray (29 MB of its own), 56 MB with the window open (35 MB of its own).
+- CPU: about 0% in the tray and with the window open (16 ms of CPU time per minute).
+- Measured on Windows 11 with an Aerox 3 Wireless connected.
+
 ## V5 — public GitHub release
 - English-only: the RU/EN switch and the Russian UI were removed; all UI text, logs,
   notifications, comments and docs are in English. A `language` key left in an old

@@ -1,5 +1,7 @@
 # Aerox Lite
 
+*In collaboration with [Claude](https://claude.ai).*
+
 A lightweight, free replacement for SteelSeries GG on Windows. Made for the **SteelSeries Aerox 3 Wireless**
 (2020 / 2022, Snow, Ghost) and now also for **65 other SteelSeries mice**: Rival, Sensei, Prime, Aerox 5 / 9,
 Kana and Kinzu ([supported mice](#supported-mice)).
