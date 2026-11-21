@@ -4,7 +4,6 @@ import json
 import math
 import os
 import re
-import tempfile
 import threading
 
 _WRITE_LOCK = threading.Lock()
@@ -23,6 +22,7 @@ def normalize(default, user, keys, special, media, modes, max_macros=12):
         except (TypeError, ValueError, OverflowError): return fallback
     for key in ('apply_on_connect', 'autostart', 'eco', 'smart_light', 'verbose_log'):
         if isinstance(user.get(key), bool): c[key] = user[key]
+    if user.get('theme') in ('dark', 'light'): c['theme'] = user['theme']
     levels = user.get('dpi')
     if isinstance(levels, list) and levels:
         c['dpi'] = [number(x, 400, 100, 18000, 100) for x in levels[:5]]
@@ -33,6 +33,9 @@ def normalize(default, user, keys, special, media, modes, max_macros=12):
     delay = user.get('smart_delay')
     if isinstance(delay, (int, float)) and not isinstance(delay, bool) and math.isfinite(delay):
         c['smart_delay'] = max(0.1, min(5.0, delay))
+    scale = user.get('ui_scale')
+    if isinstance(scale, (int, float)) and not isinstance(scale, bool) and math.isfinite(scale):
+        c['ui_scale'] = round(max(0.5, min(2.0, scale)), 2)
     light = user.get('light')
     color = lambda x: isinstance(x, str) and re.fullmatch(r'#[0-9a-fA-F]{6}', x) is not None
     if isinstance(light, dict):
@@ -44,6 +47,15 @@ def normalize(default, user, keys, special, media, modes, max_macros=12):
         if isinstance(light.get('colors'), list):
             for i, value in enumerate(light['colors'][:3]):
                 if color(value): c['light']['colors'][i] = value
+    devices = user.get('devices')
+    if isinstance(devices, dict):  # other mice: {"1038:pid": {setting: value}}; generic.py validates values
+        simple = lambda v: (isinstance(v, (str, int, float)) and not isinstance(v, bool) and (not isinstance(v, str) or len(v) <= 256)) \
+            or (isinstance(v, list) and len(v) <= 8 and all(type(x) is int for x in v)) \
+            or (isinstance(v, dict) and len(v) <= 32 and all(isinstance(a, str) and len(a) <= 32 and isinstance(b, str)
+                                                            and len(b) <= 64 for a, b in v.items()))  # button mapping
+        for key, values in list(devices.items())[:64]:
+            if isinstance(key, str) and re.fullmatch(r'[0-9a-f]{4}:[0-9a-f]{4}', key) and isinstance(values, dict):
+                c['devices'][key] = {k: v for k, v in list(values.items())[:64] if isinstance(k, str) and simple(v)}
     used = set()
     if isinstance(user.get('macros'), list):
         for m in user['macros'][:max_macros]:
@@ -69,7 +81,9 @@ def atomic_save(path, cfg):
     with _WRITE_LOCK:
         directory = os.path.dirname(os.path.abspath(path))
         os.makedirs(directory, exist_ok=True)
-        fd, temporary = tempfile.mkstemp(prefix='.config-', suffix='.tmp', dir=directory)
+        # a fixed name per process (tempfile would import shutil and random at start-up for this)
+        temporary = os.path.join(directory, '.config-{0}.tmp'.format(os.getpid()))
+        fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
         try:
             with os.fdopen(fd, 'w', encoding='utf-8') as f:
                 json.dump(cfg, f, ensure_ascii=False, indent=2, allow_nan=False)

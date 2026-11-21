@@ -1,5 +1,83 @@
 # Changelog
 
+## V5.0.1
+
+### Highlights
+- **65 more SteelSeries mice.** Rival, Sensei, Prime, Aerox 5 / 9, Kana and Kinzu models (76 USB IDs)
+  are recognised automatically and get the same window as the Aerox 3, with a picture of your model.
+  Nothing extra to download. See "Supported mice" in the README.
+- **New look** with a light and a dark theme, an interface size control and small animations.
+- **Starts in ~0.2 s instead of ~4.5 s:** the installed program is a folder instead of a single EXE that unpacked itself (and was scanned by the antivirus) on every start.
+
+### Other SteelSeries mice
+- Found by their USB ID, from the open device descriptions of
+  [rivalcfg](https://github.com/flozz/rivalcfg); the Aerox 3 Wireless keeps its own full-featured code.
+- Window built for each model: buttons on the left, a picture of the mouse with its lit zones in your
+  colours in the middle, and the Settings, Lighting and Modules tabs on the right.
+- Button remapping on 47 models: another button, CPI switch, scroll, a keyboard key, a media key or a
+  macro.
+- CPI levels or presets, polling rate, every colour zone with "Set all", lighting effects, reactive
+  colour.
+- Wireless mice show the battery level and forecast and the sleep / dim timers; wired mice show a short
+  summary instead.
+- Settings are remembered per model and sent again on connect.
+
+### Look and feel
+- Rounded cards, switches, pill buttons and tabs, round colour swatches, an app icon, clearer button
+  names (Left button -> Left click), a battery indicator and a connection chip in the header.
+- Light and dark theme: the switch at the top left changes it at once; the choice is saved.
+- Interface size: A- / A+ at the top right scale text, buttons and the mouse picture (50-200%, limited
+  by the screen).
+- Windows display scaling (125%, 150%, ...) enlarges the mouse picture and the window too.
+- The window never squeezes its content: columns cannot slide over the mouse picture, and the right
+  column keeps one width for all tabs.
+- Activity shows the last two events; the full log opens on demand. The mouse sensor log is for one
+  session: it is always off when the app starts.
+- Small animations, only while something changes: switches slide, the theme switch slides before the
+  colours change, and a new colour fades in on the mouse picture.
+
+### Faster and leaner
+- Near-zero background cost: threads and the window sleep until something happens (idle wakeups
+  ~47/s -> under 1/s, idle CPU ~0); the mouse picture is redrawn only when it changes and only while
+  visible.
+- Mouse input is read only while a feature needs it (macros, multi-click, smart lighting, the
+  visible sensor log). Multi-click uses Raw Input instead of a low-level mouse hook written in
+  Python, so the cursor cannot stutter; the 1 ms timer is requested only during a click burst.
+- A newly plugged-in mouse is noticed at once through Windows device notifications.
+- Theme and interface size change in place (theme ~0.8 s -> ~0.2 s); switching tabs takes ~20 ms.
+- At autostart the app starts in the tray and builds its window only when first opened
+  (~0.65 s -> ~0.1 s of start-up work).
+- rivalcfg and the pictures of other mice load only when such a mouse is plugged in; one USB scan per
+  check; unplugging a mouse is noticed at once.
+- Smaller build: unused image codecs, colour management, OpenSSL and Tcl time-zone data are left out;
+  bytecode is optimised.
+
+### Windows
+- The installed program is a folder (%LOCALAPPDATA%\Programs\AeroxLite) and starts in ~0.2 s.
+  The portable AeroxLite.exe is still attached to releases (12 MB, was 20 MB).
+- Releases also ship AeroxLite-windows.zip (installer, program and guide).
+
+### Install and uninstall
+- "Install Aerox Lite.bat": double-click, no administrator rights. Installs the program, adds
+  Start menu (and optional desktop) shortcuts, registers it in Settings > Apps, removes the
+  downloaded-file mark so SmartScreen does not ask on every start, repoints an old "Start with
+  Windows" entry and starts the app. From source it finds or installs Python and builds first.
+- "Uninstall Aerox Lite.bat" or Settings > Apps > Uninstall removes it again.
+- The installer and the uninstaller close only the installed copy, never one running elsewhere.
+- The uninstaller asks whether to remove only the app or everything (settings and the downloaded
+  folder too).
+- HOW-TO-INSTALL.txt: a step-by-step guide, included in the download.
+- The repository root and the download hold only the installer, the uninstaller and the guide.
+
+### Smaller fixes
+- When the mouse cannot be opened, the log says why (no SteelSeries device, wrong interface, or the
+  exact error with a permission hint).
+- Saving or deleting a macro no longer leaks the old button menus; a failing input callback no longer
+  stops the listener; the SteelSeries GG check no longer delays start-up.
+- The SteelSeries GG check no longer fails silently when Windows lists processes in a non-UTF-8
+  code page.
+- Every build is self-tested before it is packaged.
+
 ## V5 — public GitHub release
 - English-only: the RU/EN switch and the Russian UI were removed; all UI text, logs,
   notifications, comments and docs are in English. A `language` key left in an old

@@ -13,7 +13,7 @@ import unittest
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / 'src'))
 # Keep the production imports intact; fake only unavailable hardware/tray backends.
 sys.modules['hid'] = types.SimpleNamespace(enumerate=lambda *_: [])
 sys.modules['pystray'] = types.SimpleNamespace()
@@ -21,7 +21,7 @@ import aerox_lite as app
 from config_store import atomic_save
 
 # Parse/playback is tested from the Windows source without calling the Win32 ABI.
-source = (ROOT / 'winput.py').read_text(encoding='utf-8')
+source = (ROOT / 'src' / 'winput.py').read_text(encoding='utf-8')
 macro_code = source[source.index('VK = {'):]
 macro = types.ModuleType('macro_logic')
 macro.__dict__.update(threading=threading, time=importlib.import_module('time'), VK_F13=0x7C)
@@ -135,10 +135,10 @@ class CoreTests(unittest.TestCase):
         a.sp_lbl=types.SimpleNamespace(config=lambda **_:None);cats=[];a.changed=cats.append
         a._on_speed('77');self.assertEqual(a.cfg['light']['speed'],77);self.assertEqual(cats,['light'])
     def test_english_only_sources(self):
-        for path in [*ROOT.glob('*.py'), *ROOT.glob('tests/*.py')]:
+        for path in [*ROOT.glob('src/*.py'), *ROOT.glob('tests/*.py')]:
             text=path.read_text(encoding='utf-8')
             self.assertFalse(any('\u0400'<=ch<='\u04ff' for ch in text), path.name)
-        self.assertEqual(app.action_name('button1'),'Button 1')
+        self.assertEqual(app.action_name('button1'),'Left click')
         self.assertTrue(app.MacroEditor.HELP.startswith('One line per action'))
     def test_macro_tabs_and_errors(self):
         self.assertEqual(macro.parse('wait\t50\ndown shift\nup shift\nctrl+c\ntext 😀')[0],('wait',50))

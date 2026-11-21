@@ -22,6 +22,15 @@ class WNDCLASSW(ctypes.Structure):
                 ("lpszClassName", W.LPCWSTR)]
 
 
+class GUID(ctypes.Structure):
+    _fields_ = [("Data1", W.DWORD), ("Data2", W.WORD), ("Data3", W.WORD), ("Data4", ctypes.c_ubyte * 8)]
+
+
+class DEV_BROADCAST_DEVICEINTERFACE(ctypes.Structure):
+    _fields_ = [("dbcc_size", W.DWORD), ("dbcc_devicetype", W.DWORD), ("dbcc_reserved", W.DWORD),
+                ("dbcc_classguid", GUID), ("dbcc_name", ctypes.c_wchar * 1)]
+
+
 class RAWINPUTDEVICE(ctypes.Structure):
     _fields_ = [("usUsagePage", W.USHORT), ("usUsage", W.USHORT), ("dwFlags", W.DWORD), ("hwndTarget", W.HWND)]
 
@@ -59,6 +68,7 @@ user32.CreateWindowExW.argtypes = [W.DWORD, W.LPCWSTR, W.LPCWSTR, W.DWORD, ctype
                                    ctypes.c_int, ctypes.c_int, W.HWND, W.HMENU, W.HINSTANCE, W.LPVOID]
 user32.CreateWindowExW.restype = W.HWND
 user32.RegisterRawInputDevices.argtypes = [ctypes.POINTER(RAWINPUTDEVICE), W.UINT, W.UINT]
+user32.RegisterRawInputDevices.restype = W.BOOL
 user32.GetRawInputData.argtypes = [W.HANDLE, W.UINT, W.LPVOID, ctypes.POINTER(W.UINT), W.UINT]
 user32.GetRawInputData.restype = W.UINT
 user32.GetMessageW.argtypes = [ctypes.POINTER(W.MSG), W.HWND, W.UINT, W.UINT]
@@ -77,17 +87,30 @@ user32.DestroyWindow.argtypes = [W.HWND]
 user32.DestroyWindow.restype = W.BOOL
 user32.UnregisterClassW.argtypes = [W.LPCWSTR, W.HINSTANCE]
 user32.PostQuitMessage.argtypes = [ctypes.c_int]
+user32.RegisterDeviceNotificationW.argtypes = [W.HANDLE, W.LPVOID, W.DWORD]
+user32.RegisterDeviceNotificationW.restype = W.HANDLE
+user32.UnregisterDeviceNotification.argtypes = [W.HANDLE]
+
+# HID device arrival/removal notifications (no polling for a newly plugged-in mouse)
+WM_DEVICECHANGE, DBT_DEVICEARRIVAL, DBT_DEVICEREMOVECOMPLETE, DBT_DEVTYP_DEVICEINTERFACE = 0x0219, 0x8000, 0x8004, 5
+GUID_DEVINTERFACE_HID = GUID(0x4D1E55B2, 0xF16F, 0x11CF, (ctypes.c_ubyte * 8)(0x88, 0xCB, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30))
+_NAME_OFFSET = DEV_BROADCAST_DEVICEINTERFACE.dbcc_name.offset
 
 WM_INPUT, RID_INPUT, RIDEV_INPUTSINK, HWND_MESSAGE = 0x00FF, 0x10000003, 0x100, -3
+RIDEV_REMOVE, RIDEV_DEVNOTIFY, WM_APP_REREGISTER = 0x1, 0x2000, 0x8001
 RIDI_DEVICENAME = 0x20000007
 VK_F13 = 0x7C
+BTN_LEFT, BTN_RIGHT = "left", "right"
+_U32, _PTR, _U16, _BTN, _XY = (struct.Struct(f).unpack_from for f in ("I", "P", "H", "Hh", "ii"))
 
 
 class RawInput(threading.Thread):
     """Listens to Raw Input. Only events from the SteelSeries mouse (VID_1038) pass the filter.
-    on_move() — movement; on_key(vk, down) — keys the mouse sends (bindings/macros F13–F24).
-    If stats_on: accumulates movement in counters (int addition only — near-zero cost)
-    and queues rare events (buttons/wheel/keys) in events.
+    on_move() — movement; on_key(vk, down) — keys the mouse sends (bindings/macros F13–F24);
+    on_button(code, down, t) — left/right button of the SteelSeries mouse (multi-click).
+    Only the needed device classes are registered (configure()): no mouse registration means no
+    WM_INPUT per cursor move at all. Injected input (SendInput) has no device and is ignored.
+    If stats_on: accumulates movement in counters and queues rare events in events.
     """
     BTN = ((0x001, 0x002, "Left click"), (0x004, 0x008, "Right click"), (0x010, 0x020, "Middle click"),
            (0x040, 0x080, "Side back"), (0x100, 0x200, "Side forward"))
@@ -96,6 +119,11 @@ class RawInput(threading.Thread):
         super().__init__(daemon=True)
         self.on_move, self.on_key, self.vid = on_move, on_key, vid
         self.on_error = on_error
+        self.on_button = None
+        self._want = {"motion": True, "keys": True, "buttons": False}
+        self._registered = {2: False, 6: False}
+        self.hotplug = False      # True once HID arrival/removal notifications are registered
+        self.on_hotplug = None    # called when a SteelSeries device is plugged in or removed
         self.hwnd = None
         self.stop_event = threading.Event()
         self.stats_lock = threading.Lock()
@@ -117,6 +145,27 @@ class RawInput(threading.Thread):
     def stop(self):
         self.stop_event.set()
         if self.hwnd: user32.PostMessageW(self.hwnd, 0x0010, 0, 0)
+
+    def configure(self, motion=None, keys=None, buttons=None):
+        for k, v in (("motion", motion), ("keys", keys), ("buttons", buttons)):
+            if v is not None: self._want[k] = bool(v)
+        if self.hwnd: user32.PostMessageW(self.hwnd, WM_APP_REREGISTER, 0, 0)
+
+    def set_button_handler(self, cb):
+        self.on_button = cb
+        self.configure()
+
+    def _register(self, hwnd):
+        """(Un)register mouse (usage 2) and keyboard (usage 6) to match what is needed. Message thread only."""
+        w = self._want
+        need = {2: w["motion"] or w["buttons"] or self.on_button is not None or self.stats_on, 6: w["keys"]}
+        for usage, on in need.items():
+            if on == self._registered[usage]: continue
+            dev = RAWINPUTDEVICE(1, usage, RIDEV_INPUTSINK | RIDEV_DEVNOTIFY, hwnd) if on else RAWINPUTDEVICE(1, usage, RIDEV_REMOVE, None)
+            if user32.RegisterRawInputDevices(ctypes.byref(dev), 1, ctypes.sizeof(RAWINPUTDEVICE)) or not on:
+                self._registered[usage] = on
+            elif on:
+                raise ctypes.WinError(ctypes.get_last_error())
 
     def run(self):
         try: self._message_loop()
@@ -151,16 +200,33 @@ class RawInput(threading.Thread):
                 user32.PostQuitMessage(0); return 0
             if msg == 0x00FE:
                 self._devs.clear(); self.found = False; return 0
+            if msg == WM_DEVICECHANGE:
+                if wp in (DBT_DEVICEARRIVAL, DBT_DEVICEREMOVECOMPLETE) and lp and self.on_hotplug:
+                    try:
+                        hdr = ctypes.cast(lp, ctypes.POINTER(DEV_BROADCAST_DEVICEINTERFACE)).contents
+                        name = ctypes.wstring_at(lp + _NAME_OFFSET) if hdr.dbcc_devicetype == DBT_DEVTYP_DEVICEINTERFACE else ""
+                        if self.vid in name.upper(): self.on_hotplug()
+                    except Exception:
+                        pass
+                return 1
+            if msg == WM_APP_REREGISTER:
+                try: self._register(hwnd)
+                except OSError as e:
+                    if self.on_error: self.on_error(e)
+                return 0
             if msg == WM_INPUT:
                 try:
                     size.value = 128
                     if user32.GetRawInputData(lp, RID_INPUT, buf, ctypes.byref(size), hdr) not in (0, 0xFFFFFFFF):
-                        typ, hdev = struct.unpack_from("I", buf, 0)[0], struct.unpack_from("P", buf, 8)[0]
+                        typ, hdev = _U32(buf, 0)[0], _PTR(buf, 8)[0]
                         ours = self._is_ours(hdev)
                         if typ == 0:
-                            bflags, bdata = struct.unpack_from("Hh", buf, hdr + 4)
-                            x, y = struct.unpack_from("ii", buf, hdr + 12)
-                            if (x or y) and (ours or not self.found): self.on_move()
+                            bflags, bdata = _BTN(buf, hdr + 4)
+                            x, y = _XY(buf, hdr + 12)
+                            if (x or y) and self._want["motion"] and (ours or not self.found): self.on_move()
+                            if bflags and ours and self.on_button:
+                                if bflags & 0x003: self.on_button(BTN_LEFT, bool(bflags & 0x001), None)
+                                if bflags & 0x00C: self.on_button(BTN_RIGHT, bool(bflags & 0x004), None)
                             if ours and self.stats_on:
                                 with self.stats_lock:
                                     if x or y:
@@ -176,7 +242,7 @@ class RawInput(threading.Thread):
                                                 t0 = self._down.pop(name, None)
                                                 self.events.append(("btn", name, None if t0 is None else int((perf() - t0) * 1000)))
                         elif typ == 1 and ours:
-                            flags, vk = struct.unpack_from("H", buf, hdr + 2)[0], struct.unpack_from("H", buf, hdr + 6)[0]
+                            flags, vk = _U16(buf, hdr + 2)[0], _U16(buf, hdr + 6)[0]
                             down = not (flags & 1)
                             self.on_key(vk, down)
                             if self.stats_on and down: self.events.append(("key", vk, None))
@@ -193,11 +259,12 @@ class RawInput(threading.Thread):
                                       W.HWND(HWND_MESSAGE), None, hinst, None)
         if not hwnd: raise ctypes.WinError(ctypes.get_last_error())
         self.hwnd = hwnd
-        devs = (RAWINPUTDEVICE * 2)(RAWINPUTDEVICE(1, 2, RIDEV_INPUTSINK | 0x2000, hwnd),
-                                    RAWINPUTDEVICE(1, 6, RIDEV_INPUTSINK | 0x2000, hwnd))
+        filt = DEV_BROADCAST_DEVICEINTERFACE(ctypes.sizeof(DEV_BROADCAST_DEVICEINTERFACE), DBT_DEVTYP_DEVICEINTERFACE, 0,
+                                             GUID_DEVINTERFACE_HID)
+        notify = user32.RegisterDeviceNotificationW(hwnd, ctypes.byref(filt), 0)
+        self.hotplug = bool(notify)
         try:
-            if not user32.RegisterRawInputDevices(devs, 2, ctypes.sizeof(RAWINPUTDEVICE)):
-                raise ctypes.WinError(ctypes.get_last_error())
+            self._register(hwnd)
             if self.stop_event.is_set(): return
             msg = W.MSG()
             while True:
@@ -207,6 +274,13 @@ class RawInput(threading.Thread):
                 user32.TranslateMessage(ctypes.byref(msg))
                 user32.DispatchMessageW(ctypes.byref(msg))
         finally:
+            self.hotplug = False
+            if notify: user32.UnregisterDeviceNotification(notify)
+            for usage in (2, 6):
+                if self._registered[usage]:
+                    user32.RegisterRawInputDevices(ctypes.byref(RAWINPUTDEVICE(1, usage, RIDEV_REMOVE, None)), 1,
+                                                   ctypes.sizeof(RAWINPUTDEVICE))
+                    self._registered[usage] = False
             user32.DestroyWindow(hwnd)
             self.hwnd = None
             user32.UnregisterClassW(wc.lpszClassName, hinst)

@@ -11,7 +11,7 @@ import unittest
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / 'src'))
 sys.modules.setdefault('hid', types.SimpleNamespace(enumerate=lambda *_: []))
 sys.modules.setdefault('pystray', types.SimpleNamespace())
 import calibration
@@ -161,7 +161,7 @@ class BatteryTests(Tmp):
         cats, save, cfg = a.jobs.get_nowait()
         self.assertTrue(cfg['_saver'])
         sent = []
-        m = types.SimpleNamespace(connected=lambda: True, set_poll=sent.append,
+        m = types.SimpleNamespace(connected=lambda: True, generic=False, set_poll=sent.append,
                                   set_reactive=lambda *_: None, set_zone=lambda z, c, fast=False: sent.append(c),
                                   set_default_light=lambda *_: None)
         a.mouse, a.log, a.post = m, lambda *_: None, lambda *_: None

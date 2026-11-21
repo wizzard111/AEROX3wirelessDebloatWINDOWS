@@ -1,6 +1,6 @@
 =====================================================================
   AEROX LITE FOR WINDOWS - STEP BY STEP GUIDE
-  For the SteelSeries Aerox 3 Wireless mouse
+  For the SteelSeries Aerox 3 Wireless (and other SteelSeries mice)
 =====================================================================
 
 Aerox Lite is a small free program that replaces SteelSeries GG.
@@ -9,28 +9,41 @@ and shows the battery level next to the clock.
 
 
 ---------------------------------------------------------------------
-STEP 1. CLOSE STEELSERIES GG (IMPORTANT)
+STEP 1. UNZIP THE DOWNLOAD
 ---------------------------------------------------------------------
 
-SteelSeries GG fights with Aerox Lite over the mouse settings.
-
-  1. Look at the bottom-right corner of the screen, next to the clock.
-  2. Click the small arrow ( ^ ) to see the hidden icons.
-  3. Right-click the SteelSeries GG icon and choose "Exit".
-  4. Optional but recommended: stop GG from starting with Windows.
-     Press Ctrl + Shift + Esc, open the "Startup apps" tab,
-     right-click SteelSeries GG and choose "Disable".
+  1. Right-click AeroxLite-windows.zip -> "Extract All..." -> "Extract".
+  2. Open the new folder "AeroxLite". You will see:
+       Install Aerox Lite.bat     <- the installer
+       Uninstall Aerox Lite.bat   <- removes it again
+       HOW-TO-INSTALL.txt         <- this guide
+       app                        <- the program (no need to open it)
 
 
 ---------------------------------------------------------------------
-STEP 2. PUT THE PROGRAM IN A FOLDER
+STEP 2. RUN THE INSTALLER
 ---------------------------------------------------------------------
 
-  1. Create a folder for it, for example:  C:\Programs\AeroxLite
-  2. Move AeroxLite.exe into that folder.
+  1. Double-click "Install Aerox Lite.bat".
 
-  Keep it there. If you move the file later, turn
-  "Start with Windows" off and on again (see step 6).
+  2. Windows may show a blue window: "Windows protected your PC".
+     This happens because the program is free and not signed.
+     Click "More info", then click "Run anyway". (Only this once:
+     the installed program starts without this warning.)
+
+  3. A black window shows every step. Answer its questions with
+     Enter (= yes):
+       - quit SteelSeries GG, if it is running (recommended: GG fights
+         with Aerox Lite over the mouse settings)
+       - put a shortcut on the desktop
+     No administrator password is needed.
+
+  4. When it says "Aerox Lite is installed", the program starts by
+     itself. From now on, open it from the Start menu: "Aerox Lite".
+
+  Optional: stop SteelSeries GG from starting with Windows.
+  Press Ctrl + Shift + Esc, open "Startup apps", right-click
+  SteelSeries GG and choose "Disable".
 
 
 ---------------------------------------------------------------------
@@ -43,26 +56,15 @@ STEP 3. CONNECT THE MOUSE
 
   Turn the mouse on (switch on the bottom set to 2.4 GHz).
 
-
----------------------------------------------------------------------
-STEP 4. START THE PROGRAM
----------------------------------------------------------------------
-
-  1. Double-click AeroxLite.exe.
-
-  2. Windows may show a blue window: "Windows protected your PC".
-     This happens because the program is free and not signed.
-     Click "More info", then click "Run anyway".
-
-  3. The Aerox Lite window opens. At the top right you should see
-     something like:  "● 2.4 GHz · 85%"
-     That means the mouse is connected and shows its battery level.
+  At the top right of the Aerox Lite window you should see
+  something like:  "● 2.4 GHz · 85%"
+  That means the mouse is connected and shows its battery level.
 
   If it says "mouse not found", see TROUBLESHOOTING at the end.
 
 
 ---------------------------------------------------------------------
-STEP 5. CHANGE YOUR SETTINGS
+STEP 4. CHANGE YOUR SETTINGS
 ---------------------------------------------------------------------
 
 The window has three tabs in the middle: Settings, Lighting, Modules.
@@ -82,27 +84,50 @@ Changes are applied to the mouse right away.
     - ZONES: click a zone to pick its color.
     - OPTIONS: brightness and effect speed.
 
-  BUTTONS (left side, "ACTIONS")
+  BUTTONS (left side)
     - Click the box next to a button and choose what it should do:
       another button, a keyboard key, a media key, or a macro.
-    - "RESET BINDINGS" puts everything back to normal.
+    - "Reset" puts everything back to normal.
 
-  >>> When you are happy, click "SAVE TO MOUSE" (bottom right). <<<
+  ANOTHER STEELSERIES MOUSE (Rival, Sensei, Prime, Aerox 5/9, ...)
+    - Just plug it in. Aerox Lite recognises 65 more SteelSeries models by
+      itself; there is nothing extra to download.
+    - The window then looks like the Aerox 3 one, made for that mouse:
+      a picture of it, its buttons on the left (choose another
+      button, a key, a media key or a macro for each), and the tabs
+      Settings (sensitivity, polling rate; battery and sleep timer on
+      a wireless mouse), Lighting (each colour zone) and Modules.
+      Changes apply at once; "Save to mouse" keeps them inside the mouse.
+    - The model name appears under "Aerox Lite" at the top left.
+
+  LIGHT OR DARK
+    - The switch at the top left (moon / sun) changes between the dark
+      and the light look. Your choice is remembered.
+
+  WINDOW SIZE
+    - Text and buttons too small or too big? Use "A-" and "A+" at the
+      top right of the window (50% to 200%). The size is remembered.
+
+  >>> When you are happy, click "Save to mouse" (bottom right). <<<
   This stores the settings inside the mouse, so they keep working
   on any computer, even without Aerox Lite.
 
 
 ---------------------------------------------------------------------
-STEP 6. EVERYDAY USE
+STEP 5. EVERYDAY USE
 ---------------------------------------------------------------------
 
   - Closing the window does NOT quit the program. It keeps running
     next to the clock and shows the battery level in the icon.
   - Click that icon (or right-click -> "Open") to open the window.
-  - To quit completely: right-click the icon -> "Quit",
-    or click "QUIT" at the top of the window.
+  - To quit completely: right-click the icon -> "Quit".
   - Tick "Start with Windows" (bottom left) to start it
     automatically every time you turn on the computer.
+  - To remove Aerox Lite: double-click "Uninstall Aerox Lite.bat"
+    (or Settings -> Apps -> Installed apps -> Aerox Lite -> Uninstall).
+    It asks what to remove: 1) only the app, or 2) everything - the app,
+    its settings and the downloaded folder, including the installer
+    and the uninstaller.
 
 
 ---------------------------------------------------------------------
@@ -110,7 +135,7 @@ EXTRAS (OPTIONAL)
 ---------------------------------------------------------------------
 
   MACROS - one button does a sequence of keys
-    1. Under ACTIONS, next to "Macro editor", click "OPEN".
+    1. In BUTTONS (left side), click "Macros...".
     2. Click "+ NEW", type the steps, click "SAVE".
        The help on the right shows what you can type, for example:
            ctrl+c
@@ -118,7 +143,7 @@ EXTRAS (OPTIONAL)
            ctrl+v
     3. Close the editor. Click the box next to a mouse button and
        choose Macros -> your macro.
-    4. Click "SAVE TO MOUSE".
+    4. Click "Save to mouse".
     Macros only work while Aerox Lite is running.
 
   MODULES tab
@@ -139,16 +164,25 @@ TROUBLESHOOTING
     - Make sure the mouse is switched on and the dongle is plugged in.
     - Unplug the dongle, wait 5 seconds, plug it back in.
     - Try another USB port or the cable.
-    - Make sure SteelSeries GG is closed (step 1).
+    - Make sure SteelSeries GG is closed (see step 2).
 
   Lighting changes back by itself
-    - SteelSeries GG is still running. Close it (step 1).
+    - SteelSeries GG is still running. Close it (see step 2).
 
   Settings are lost after restarting the computer
-    - You forgot to click "SAVE TO MOUSE".
+    - You forgot to click "Save to mouse".
 
   The program does not start / nothing happens
     - It may already be running: look for its icon next to the clock.
+
+  "Windows protected your PC" when starting the installer
+    - Click "More info", then "Run anyway". It appears because the
+      program is free and not signed by a paid certificate.
+
+  The installer window closes immediately / nothing happens
+    - Right-click "Install Aerox Lite.bat" -> "Run as administrator"
+      is NOT needed. Make sure you extracted the zip first (STEP 1):
+      it does not work from inside the zip.
 
   Still stuck?
     - Open a new issue on the GitHub page of this project and attach

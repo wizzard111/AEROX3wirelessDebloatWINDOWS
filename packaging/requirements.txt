@@ -1,3 +1,4 @@
 hidapi
 pystray
 pillow
+rivalcfg==4.17.0
