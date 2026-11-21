@@ -54,7 +54,7 @@ Software lighting effects and macros work only while the app is running (in the 
 | | |
 |---|---|
 | Download | `AeroxLite-windows.zip` 12 MB, or the portable `AeroxLite.exe` 12 MB |
-| On disk after installing | 27 MB in `%LOCALAPPDATA%\Programs\AeroxLite`; settings a few KB; log files at most 1 MB |
+| On disk after installing | 25 MB in `%LOCALAPPDATA%\Programs\AeroxLite`; settings a few KB; log files at most 1 MB |
 | Memory in the tray | 49 MB (29 MB of its own) |
 | Memory with the window open | 56 MB (35 MB of its own) |
 | CPU, in the tray or with the window open | about 0%: 16 ms of CPU time per minute |
