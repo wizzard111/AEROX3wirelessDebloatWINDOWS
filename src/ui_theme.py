@@ -399,19 +399,35 @@ class Mascot(tk.Label):
     def __init__(self, parent):
         super().__init__(parent, bd=0, highlightthickness=0, bg=parent.cget("bg"))
         self._frames, self._times, self._key = None, None, None
-        self._i, self._after, self._on = 0, None, False
+        self._i, self._after, self._on, self._height = 0, None, False, None
 
-    HEIGHT = 150  # px at 100 % (mascot_art.py frames are this tall)
+    HEIGHT = 150  # px at 100 % (mascot_art.py frames are this tall): the largest it is shown
+    MIN_HEIGHT = 72  # smaller than this (px at 100 %) it is not worth showing
+
+    def fit(self, width, height):
+        """Pixel height to show it at in a free area of width x height (the current theme's picture,
+        at most HEIGHT at the interface size), or 0 when it does not fit. Cheap: decodes nothing."""
+        import mascot_art
+        (w, h), _, _ = mascot_art.MASCOT["light" if THEME == "light" else "dark"]
+        size = min(px(self.HEIGHT), height, int(width * h / w))
+        return size if size >= px(self.MIN_HEIGHT) else 0
+
+    def set_height(self, height):
+        """Show it at this pixel height (from fit); redrawn now if it is already shown."""
+        if height != self._height:
+            self._height = height
+            self.refresh()
 
     def _build(self):
         """PhotoImages for the current theme / size / background (once; again only when one changes)."""
         bg = self.cget("bg")
-        key = (THEME, SCALE, bg)
+        key = (THEME, SCALE, bg, self._height)
         if key == self._key: return
         import mascot_art  # decoded only here, never at start
         (w, h), times, data = mascot_art.MASCOT["light" if THEME == "light" else "dark"]
         strip = Image.open(io.BytesIO(base64.b64decode("".join(data)))).convert("L")
-        sw, sh = px(w), px(h)
+        sh = self._height or px(h)
+        sw = max(1, round(w * sh / h))
         lo, hi = rgb(bg), rgb(PAL["FG"])
         luts = [[round(a + (b - a) * v / 255) for v in range(256)] for a, b in zip(lo, hi)]
         frames = []

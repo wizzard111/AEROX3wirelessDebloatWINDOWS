@@ -53,7 +53,7 @@ jobs:
           New-Item -ItemType Directory -Force pkg/AeroxLite/app | Out-Null
           Copy-Item "Install Aerox Lite.bat", "Uninstall Aerox Lite.bat", HOW-TO-INSTALL.txt pkg/AeroxLite/
           Copy-Item build/dist/AeroxLite pkg/AeroxLite/app/ -Recurse
-          Copy-Item packaging/windows/install.ps1, packaging/windows/uninstall.ps1, packaging/windows/build.ps1, LICENSE pkg/AeroxLite/app/
+          Copy-Item packaging/windows/install.ps1, packaging/windows/uninstall.ps1, packaging/windows/build.ps1, packaging/windows/AeroxLite.ico, LICENSE pkg/AeroxLite/app/
           Compress-Archive -Path pkg/AeroxLite -DestinationPath AeroxLite-windows.zip
 
       - name: Upload artifact

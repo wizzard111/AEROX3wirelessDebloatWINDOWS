@@ -93,6 +93,16 @@ class MascotTests(unittest.TestCase):
             self.assertEqual(strip.size, (w * len(times), h), name)
             self.assertEqual(h, ui_theme.Mascot.HEIGHT)
 
+    def test_fits_the_free_space(self):
+        m, full = self.m, ui_theme.Mascot.HEIGHT
+        self.assertEqual(m.fit(1000, 1000), full)            # never larger than at 100 %
+        self.assertEqual(m.fit(1000, 100), 100)              # shrinks to the free height
+        self.assertEqual(m.fit(180, 1000), 180 * 150 // 270)  # and to the free width (dark: 270 x 150)
+        self.assertEqual(m.fit(1000, ui_theme.Mascot.MIN_HEIGHT - 1), 0)  # too small: not shown
+        m.set_height(100); m.run(False)
+        self.assertEqual((m._frames[0].width(), m._frames[0].height()), (180, 100))
+        self.assertIsNone(m._after)
+
     def test_nothing_until_shown(self):
         self.assertIsNone(self.m._frames); self.assertIsNone(self.m._after)
 

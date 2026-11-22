@@ -106,6 +106,13 @@ New-Item -ItemType Directory -Force $InstallDir | Out-Null
 Copy-Item (Join-Path (Split-Path $exe) "*") $InstallDir -Recurse -Force
 $target = Join-Path $InstallDir "AeroxLite.exe"
 Copy-Item (Join-Path $here "uninstall.ps1") (Join-Path $InstallDir "uninstall.ps1") -Force
+# The icon as its own file: Windows caches shortcut icons by the file they come from, so after an
+# update a shortcut to the same AeroxLite.exe could keep showing the old picture.
+$icon = "$target,0"
+if (Test-Path (Join-Path $here "AeroxLite.ico")) {
+    Copy-Item (Join-Path $here "AeroxLite.ico") (Join-Path $InstallDir "AeroxLite.ico") -Force
+    $icon = Join-Path $InstallDir "AeroxLite.ico"
+}
 # Downloaded files carry "from the internet": SmartScreen would ask on every start.
 Get-ChildItem $InstallDir -Recurse -File | Unblock-File
 
@@ -113,7 +120,7 @@ Step "Creating shortcuts"
 $shell = New-Object -ComObject WScript.Shell
 function New-Shortcut([string]$path) {
     $s = $shell.CreateShortcut($path)
-    $s.TargetPath = $target; $s.WorkingDirectory = $InstallDir; $s.IconLocation = "$target,0"
+    $s.TargetPath = $target; $s.WorkingDirectory = $InstallDir; $s.IconLocation = $icon
     $s.Description = "SteelSeries Aerox 3 Wireless settings"
     $s.Save()
 }
@@ -126,13 +133,15 @@ if (Ask "Also put a shortcut on the desktop?") {
         New-Shortcut (Join-Path $DesktopDir "Aerox Lite.lnk"); Write-Host "Desktop: Aerox Lite"
     } catch { Write-Host "Could not create the desktop shortcut ($_); the Start menu entry works." }
 }
+# Let Explorer redraw shortcut icons now instead of using its cached ones.
+try { Start-Process "$env:SystemRoot\System32\ie4uinit.exe" -ArgumentList "-show" -WindowStyle Hidden -Wait -ErrorAction Stop } catch { }
 
 Step "Registering in Settings > Apps (for uninstalling)"
 $uninstall = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' + (Join-Path $InstallDir "uninstall.ps1") + '"'
 New-Item -Force $UninstallKey | Out-Null
 $props = @{
-    DisplayName = "Aerox Lite"; DisplayVersion = "5.0.1"; Publisher = "reflex"
-    DisplayIcon = $target; InstallLocation = $InstallDir; UninstallString = $uninstall
+    DisplayName = "Aerox Lite"; DisplayVersion = "5.1.0"; Publisher = "reflex"
+    DisplayIcon = ($icon -replace ',0$', ''); InstallLocation = $InstallDir; UninstallString = $uninstall
     URLInfoAbout = "https://github.com/wizzard111/AEROX3wirelessDebloatWINDOWS"
 }
 foreach ($k in $props.Keys) { New-ItemProperty -Path $UninstallKey -Name $k -Value $props[$k] -PropertyType String -Force | Out-Null }

@@ -631,7 +631,7 @@ class App:
         if getattr(self, "_log_open", False): self.log_frame.pack(fill="both", expand=True, padx=14, pady=(6, 0))
         # the animation in the free space under ACTIVITY (placed, so it never makes the window bigger)
         self.mascot, self._mascot_room, self._mascot_fit_after = ui_theme.Mascot(left), False, None
-        for w in [left] + [c for c in left.winfo_children() if c not in left._ax_corners.values()]:
+        for w in [left] + [c for c in left.winfo_children() if c not in left._ax_corners.values() and c is not self.mascot]:
             w.bind("<Configure>", lambda e: self._mascot_fit_soon(), add="+")
 
         # ---- Center: tabs + mouse picture; right: tab panes
@@ -685,8 +685,11 @@ class App:
         if m is None or not m.winfo_exists() or not self._visible: return  # sizes are not real while hidden
         left = m.master
         bottom = max([c.winfo_y() + c.winfo_height() for c in left.pack_slaves() if c is not self._left_pad] or [0])
-        h = ui_theme.px(ui_theme.Mascot.HEIGHT)
-        room = left.winfo_height() - self._left_pad.winfo_height() - bottom >= h + ui_theme.px(12)
+        # as large as the free space allows (fonts and so the free space differ between systems)
+        height = m.fit(left.winfo_width() - ui_theme.px(28),
+                       left.winfo_height() - self._left_pad.winfo_height() - bottom - ui_theme.px(12))
+        room = height > 0
+        if room: m.set_height(height)
         if room != self._mascot_room:
             self._mascot_room = room
             if room: m.place(relx=0.5, rely=1.0, y=-self._left_pad.winfo_height(), anchor="s")
@@ -790,7 +793,7 @@ class App:
             self.log_text.tag_config("t", foreground=LOG_DIM); self.log_text.tag_config("w", foreground=FG)
         if self.gv: self.gv.retheme()
         else: self._art_scale = None; self._draw_mouse()
-        self.mascot.refresh()
+        self.mascot.refresh(); self._mascot_fit_soon()  # the other theme's picture has another shape
         self._update_status()
 
     def _rebuild_ui(self):

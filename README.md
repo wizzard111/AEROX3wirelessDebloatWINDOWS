@@ -245,8 +245,8 @@ There are 43 hardware-independent tests; HID and the tray are mocked. The real G
 ### Releasing
 
 ```
-git tag v5.0.1
-git push origin v5.0.1
+git tag v5.1.0
+git push origin v5.1.0
 ```
 
 The workflow runs the tests, builds and self-tests the EXE, and attaches `AeroxLite-windows.zip` (installer + program) and `AeroxLite.exe` to a GitHub Release.
