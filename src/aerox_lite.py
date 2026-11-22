@@ -468,6 +468,7 @@ class App:
         # Threads sleep on these instead of polling; _kick() wakes them when something relevant changes.
         self._fx_wake, self._smart_wake, self._mon_wake = threading.Event(), threading.Event(), threading.Event()
         self._wake_pending, self._visible, self._preview_after = False, not hidden, None
+        self._active, self._focus_after = not hidden, None  # one of our windows has the focus (animation plays only then)
         self._fade = None  # colour fade on the mouse picture: (from, start time, to)
         self.logger = logging.getLogger("AeroxLite")
         self.logger.setLevel(logging.INFO)
@@ -520,6 +521,10 @@ class App:
         self.root.bind("<<AxWake>>", self._poll_ui)
         self.root.bind("<Map>", lambda e: e.widget is self.root and self._set_visible(True), add="+")
         self.root.bind("<Unmap>", lambda e: e.widget is self.root and self._set_visible(False), add="+")
+        # Tk on Windows sends no <Activate>/<Deactivate> to the main window: after any focus change, ask
+        # whether one of our windows still has the keyboard focus (none: another program is in front)
+        for ev in ("<FocusIn>", "<FocusOut>"):
+            self.root.bind(ev, lambda e: self._focus_check_soon(), add="+")
         self.root.after(100, self._poll_ui)
         self.root.after(60, self._preview_kick)
         def check_gg():
@@ -621,8 +626,13 @@ class App:
         self.log_text.tag_config("t", foreground=LOG_DIM)
         self.log_text.tag_config("w", foreground=FG)
         self._render_verbose()
-        ui_theme.sized(tk.Frame(left, bg=PANEL), height=12).pack(side="bottom", fill="x")
+        self._left_pad = ui_theme.sized(tk.Frame(left, bg=PANEL), height=12)
+        self._left_pad.pack(side="bottom", fill="x")
         if getattr(self, "_log_open", False): self.log_frame.pack(fill="both", expand=True, padx=14, pady=(6, 0))
+        # the animation in the free space under ACTIVITY (placed, so it never makes the window bigger)
+        self.mascot, self._mascot_room, self._mascot_fit_after = ui_theme.Mascot(left), False, None
+        for w in [left] + [c for c in left.winfo_children() if c not in left._ax_corners.values()]:
+            w.bind("<Configure>", lambda e: self._mascot_fit_soon(), add="+")
 
         # ---- Center: tabs + mouse picture; right: tab panes
         if self.gv:  # another SteelSeries mouse: the same layout, built from its own settings
@@ -663,6 +673,32 @@ class App:
     # ---------- other SteelSeries mice (generic.py, rivalcfg device descriptions)
     def _model_name(self):
         return self.mouse.product if self.mouse.generic else "Aerox 3 Wireless"
+
+    # ---------- the animation at the bottom of the left panel (ui_theme.Mascot)
+    def _mascot_fit_soon(self):
+        if self._mascot_fit_after is None: self._mascot_fit_after = self.root.after_idle(self._mascot_fit)
+
+    def _mascot_fit(self):
+        """Shown only when it fits under the panel content (not with the log open or a long button list)."""
+        self._mascot_fit_after = None
+        m = getattr(self, "mascot", None)
+        if m is None or not m.winfo_exists() or not self._visible: return  # sizes are not real while hidden
+        left = m.master
+        bottom = max([c.winfo_y() + c.winfo_height() for c in left.pack_slaves() if c is not self._left_pad] or [0])
+        h = ui_theme.px(ui_theme.Mascot.HEIGHT)
+        room = left.winfo_height() - self._left_pad.winfo_height() - bottom >= h + ui_theme.px(12)
+        if room != self._mascot_room:
+            self._mascot_room = room
+            if room: m.place(relx=0.5, rely=1.0, y=-self._left_pad.winfo_height(), anchor="s")
+            else: m.place_forget(); m.stop(free=True)
+        self._mascot_update()
+
+    def _mascot_update(self):
+        """Plays only while someone can see it: window shown and active, and there is room for it."""
+        m = getattr(self, "mascot", None)
+        if m is None or not m.winfo_exists(): return
+        if not self._visible: m.stop(free=True)
+        elif self._mascot_room: m.run(self._active and ui_theme.ANIMATE)
 
     def _gen_values(self):
         return self.cfg["devices"].setdefault(self.mouse.key, {})
@@ -722,7 +758,7 @@ class App:
             self.log_frame.pack(fill="both", expand=True, padx=14, pady=(6, 0)); self.log_toggle.config(text='Hide log')
         else:
             self.log_frame.pack_forget(); self.log_toggle.config(text='Show log')
-        self._fit_window()
+        self._fit_window(); self._mascot_fit_soon()
 
     def _toggle_theme(self, step=0):
         """The knob slides to the other side (about 80 ms), then the window is recoloured."""
@@ -754,6 +790,7 @@ class App:
             self.log_text.tag_config("t", foreground=LOG_DIM); self.log_text.tag_config("w", foreground=FG)
         if self.gv: self.gv.retheme()
         else: self._art_scale = None; self._draw_mouse()
+        self.mascot.refresh()
         self._update_status()
 
     def _rebuild_ui(self):
@@ -941,6 +978,7 @@ class App:
         self._scale_wraps(self.root)
         if self.gv: self.gv.rescale()
         else: self._art_scale = None; self._draw_mouse()
+        self.mascot.refresh(); self._mascot_fit_soon()
         self._size_right(); self._update_status()
         self._built_scale = sc
 
@@ -1742,10 +1780,26 @@ class App:
                 if self.gv: self.gv.draw_art()
                 elif self.art_masks is None: self._draw_mouse()  # freed while hidden
                 self._preview_kick(); self._update_status()
+                self._mascot_fit_soon()
             else:  # the picture buffers (1-5 MB) are not needed in the tray
+                self._mascot_update()  # stops and frees the animation frames
                 self.art_masks = self.art_lines = self.art_tk = None; self._art_scale = None
                 if self.gv: self.gv.free_art()
                 else: self.canvas.itemconfig(self.art_id, image="")
+
+    def _focus_check_soon(self):
+        if not self._focus_after: self._focus_after = self.root.after_idle(self._focus_check)
+
+    def _focus_check(self):
+        self._focus_after = None
+        try: active = self.root.focus_get() is not None
+        except (KeyError, tk.TclError): active = True  # focus in a menu or dialog of ours
+        self._set_active(active)
+
+    def _set_active(self, active):
+        if active != self._active:
+            self._active = active
+            if self._ui_built: self._mascot_update()
 
     def _update_input(self):
         """Ask the listener only for the input an enabled feature needs right now."""
@@ -2033,6 +2087,8 @@ def self_test():
     assert models > 50, models
     import model_art  # pictures of the other mice
     for data in model_art.ART.values(): Image.open(io.BytesIO(base64.b64decode("".join(data)))).load()
+    import mascot_art  # the panel animation
+    for _, _, data in mascot_art.MASCOT.values(): Image.open(io.BytesIO(base64.b64decode("".join(data)))).load()
     print("Aerox Lite self-test: OK ({m} mouse models; HID backend: {0}, raw input: {1})".format(hid.__name__, "ok" if winput else "unavailable", m=models))
 
 

@@ -386,3 +386,67 @@ class ColorDot(tk.Label):
             self._color = kw.pop("bg"); self._theme_key = None; self._draw()
         if kw or cnf: return super().configure(cnf, **kw)
     config = configure
+
+
+class Mascot(tk.Label):
+    """The small looping animation at the bottom of the left panel (mascot_art.py): one for each theme,
+    painted in the panel colours. Built to cost nothing when nobody looks at it:
+    - frames are made only when it is first shown, for the current theme and size, and freed by
+      stop(free=True) (window in the tray) - in the tray it holds no images and no timer;
+    - it plays only while run(True) (window visible and active, enough room); otherwise no timer runs;
+    - one Tk timer per frame change (light theme: 4 frames per 0.45 s, dark: ~8 per second)."""
+
+    def __init__(self, parent):
+        super().__init__(parent, bd=0, highlightthickness=0, bg=parent.cget("bg"))
+        self._frames, self._times, self._key = None, None, None
+        self._i, self._after, self._on = 0, None, False
+
+    HEIGHT = 150  # px at 100 % (mascot_art.py frames are this tall)
+
+    def _build(self):
+        """PhotoImages for the current theme / size / background (once; again only when one changes)."""
+        bg = self.cget("bg")
+        key = (THEME, SCALE, bg)
+        if key == self._key: return
+        import mascot_art  # decoded only here, never at start
+        (w, h), times, data = mascot_art.MASCOT["light" if THEME == "light" else "dark"]
+        strip = Image.open(io.BytesIO(base64.b64decode("".join(data)))).convert("L")
+        sw, sh = px(w), px(h)
+        lo, hi = rgb(bg), rgb(PAL["FG"])
+        luts = [[round(a + (b - a) * v / 255) for v in range(256)] for a, b in zip(lo, hi)]
+        frames = []
+        for i in range(len(times)):
+            ink = strip.crop((i * w, 0, (i + 1) * w, h))
+            if (sw, sh) != (w, h): ink = ink.resize((sw, sh), Image.LANCZOS)
+            frames.append(ImageTk.PhotoImage(Image.merge("RGB", [ink.point(t) for t in luts])))
+        self._frames, self._times, self._key = frames, times, key
+        self._i %= len(frames)
+        super().configure(image=frames[self._i], width=sw, height=sh)
+
+    def run(self, on):
+        """Shown: play (True) or hold still on the current frame (False). Holding costs nothing."""
+        self._on = on
+        self._build()
+        if not on: self._cancel()
+        elif self._after is None: self._after = self.after(self._times[self._i], self._tick)
+
+    def refresh(self):
+        """Theme or interface size changed: redraw now (also while held still)."""
+        if self._frames is not None: self._build()
+
+    def stop(self, free=False):
+        self._on = False; self._cancel()
+        if free:  # window in the tray / no room: drop the images
+            super().configure(image="")
+            self._frames = self._key = None
+
+    def _cancel(self):
+        if self._after is not None: self.after_cancel(self._after); self._after = None
+
+    def _tick(self):
+        self._after = None
+        if not self._on or not self._frames: return
+        self._build()  # no-op unless the theme or size changed
+        self._i = (self._i + 1) % len(self._frames)
+        super().configure(image=self._frames[self._i])
+        self._after = self.after(self._times[self._i], self._tick)

@@ -58,19 +58,27 @@ Software lighting effects and macros work only while the app is running (in the 
 
 ## Disk space, memory and CPU
 
+| | Memory (of it the app's own) | CPU |
+|---|---|---|
+| In the tray (started with Windows, window never opened) | 48-51 MB (31 MB) | about 0%: 0-15 ms of CPU time per minute |
+| Window open and in front | 60 MB (37 MB) | about 1% of one core, 0.1% of a 12-thread CPU: the panel animation |
+| Window open, another program in front (a game, a browser) | 60 MB (37 MB) | about 0%: 0-15 ms per minute, the animation holds still |
+| Window closed again (back in the tray) | 57 MB (34 MB) | about 0%: 0-30 ms per minute |
+
 | | |
 |---|---|
 | Download | `AeroxLite-windows.zip` 12 MB, or the portable `AeroxLite.exe` 12 MB |
 | On disk after installing | 25 MB in `%LOCALAPPDATA%\Programs\AeroxLite`; settings a few KB; log files at most 1 MB |
-| Memory in the tray | 49 MB (29 MB of its own) |
-| Memory with the window open | 56 MB (35 MB of its own) |
-| CPU, in the tray or with the window open | about 0%: 16 ms of CPU time per minute |
 
 The window is built only when you open it, and the app sleeps until something happens (a setting, the
-mouse, a battery check every 30 s). Software lighting effects (breathing, wave, colour cycle) are the
-exception: they keep sending colours to the mouse while they run.
+mouse, a battery check every 30 s). The small animation at the bottom of the left panel is the only
+thing that runs on its own, and only while the window is open **and** in front: as soon as you switch
+to another program it stops, and in the tray it holds no timer and no images at all. Software lighting
+effects (breathing, wave, colour cycle) are the other exception: they keep sending colours to the mouse
+while they run.
 
-*Measured on Windows 11 with an Aerox 3 Wireless connected (V5.0.1).*
+*Measured on Windows 11 (Ryzen 5 5600X) with an Aerox 3 Wireless connected, static lighting, 60 s per
+row; the built `AeroxLite.exe`, light and dark theme (the dark animation costs the same within 0.1%).*
 
 ## Project layout
 
@@ -84,7 +92,6 @@ exception: they keep sending colours to the mouse while they run.
 | `docs/CHANGELOG.md` | Version history |
 
 To build by hand, run `packaging\windows\build.bat`. The result is `build\dist\AeroxLite.exe`. To run it, use `packaging\windows\run.bat`.
-un.bat`.
 
 ## Other SteelSeries mice
 

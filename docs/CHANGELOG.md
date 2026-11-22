@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+- **Panel animation:** a small looping drawing in the free space at the bottom of the left panel, one
+  for the light theme and one for the dark, painted in the theme colours. It plays only while the
+  window is open and in front (about 1% of one CPU core); with another program in front it holds
+  still, and in the tray it uses no CPU and no memory for images. Hidden when the log is open or there
+  is no room. Preview: `docs/images/panel-animation-preview.png`.
+- **App icon:** `AeroxLite.exe`, its Start menu / desktop shortcuts and the Apps list now show the mouse
+  mark of the window header instead of the default Python icon.
+- README: memory and CPU measured again, per situation (tray, window in front, window behind other
+  programs).
+
 ## V5.0.1
 
 ### Highlights
