@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **Updater:** Start menu -> "Update Aerox Lite" (added by the installer; `Update Aerox Lite.bat` in the
+  download for the first time). It checks GitHub for a newer version, backs up the settings, downloads
+  the release and checks its SHA-256, installs it (nothing of the old version is left), makes sure every
+  setting is still there and starts the app again. No administrator rights, no Windows warning. Also
+  works when the GitHub API limit is used up. About 14 KB; runs only when started.
+
 ## V5.1.0
 
 - **Panel animation:** a small looping drawing in the free space at the bottom of the left panel, one

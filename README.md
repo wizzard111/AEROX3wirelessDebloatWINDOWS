@@ -56,6 +56,22 @@ A standalone `AeroxLite.exe` is attached to each release too. It runs without in
 
 Software lighting effects and macros work only while the app is running (in the tray). The static color and the hardware rainbow keep working without the app after **Save to mouse**.
 
+## Update
+
+The app has an updater. Open **Start → Update Aerox Lite** (the installer adds it). It:
+
+1. Asks GitHub whether a newer version exists. If not, it says so and stops.
+2. Backs up your settings to `%LOCALAPPDATA%\AeroxLite-updater\backups` (the last 3 backups are kept).
+3. Downloads the new release and checks its SHA-256.
+4. Installs it with the release's own installer; nothing of the old version is left.
+5. Checks that every setting is still there (restores from the backup otherwise) and starts the app again if it was running.
+
+No administrator rights are needed and Windows shows no warning: the updater runs from the program folder, not from a download.
+Installed with an older version that has no Start menu entry? Double-click **Update Aerox Lite.bat** in the downloaded folder once; after that the Start menu entry is there.
+For scripted use: `update.ps1 -Check` (exit code 2 = update available), `-Force`, `-Yes`, `-Package <zip>`.
+
+The updater is a single script of about 14 KB. It runs only when you start it and keeps nothing besides the small settings backups.
+
 ## Disk space, memory and CPU
 
 | | Memory (of it the app's own) | CPU |
@@ -85,6 +101,7 @@ row; the built `AeroxLite.exe`, light and dark theme (the dark animation costs t
 | Path | Contents |
 |---|---|
 | `Install Aerox Lite.bat`, `Uninstall Aerox Lite.bat` | Installer and uninstaller |
+| `Update Aerox Lite.bat` | Updater (`packaging/windows/update.ps1`; also in the Start menu after installing) |
 | `src/` | Application source code |
 | `packaging/windows/` | PyInstaller spec, build, install and uninstall scripts |
 | `packaging/requirements*.txt` | Python dependencies |
