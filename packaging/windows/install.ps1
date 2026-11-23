@@ -106,6 +106,9 @@ New-Item -ItemType Directory -Force $InstallDir | Out-Null
 Copy-Item (Join-Path (Split-Path $exe) "*") $InstallDir -Recurse -Force
 $target = Join-Path $InstallDir "AeroxLite.exe"
 Copy-Item (Join-Path $here "uninstall.ps1") (Join-Path $InstallDir "uninstall.ps1") -Force
+# The updater, started from the Start menu later (no download, so Windows asks nothing).
+$updatePs1 = Join-Path $InstallDir "update.ps1"
+if (Test-Path (Join-Path $here "update.ps1")) { Copy-Item (Join-Path $here "update.ps1") $updatePs1 -Force }
 # The icon as its own file: Windows caches shortcut icons by the file they come from, so after an
 # update a shortcut to the same AeroxLite.exe could keep showing the old picture.
 $icon = "$target,0"
@@ -127,6 +130,15 @@ function New-Shortcut([string]$path) {
 New-Item -ItemType Directory -Force $StartMenuDir | Out-Null
 New-Shortcut (Join-Path $StartMenuDir "Aerox Lite.lnk")
 Write-Host "Start menu: Aerox Lite"
+if (Test-Path $updatePs1) {
+    $s = $shell.CreateShortcut((Join-Path $StartMenuDir "Update Aerox Lite.lnk"))
+    $s.TargetPath = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+    $s.Arguments = '-NoProfile -ExecutionPolicy Bypass -File "' + $updatePs1 + '" -Pause'
+    $s.WorkingDirectory = $InstallDir; $s.IconLocation = $icon
+    $s.Description = "Installs the newest version of Aerox Lite; the settings are kept"
+    $s.Save()
+    Write-Host "Start menu: Update Aerox Lite"
+}
 if (Ask "Also put a shortcut on the desktop?") {
     try {
         New-Item -ItemType Directory -Force $DesktopDir | Out-Null
@@ -165,5 +177,6 @@ Write-Host ""
 Write-Host "Aerox Lite is installed. Open it from the Start menu: Aerox Lite."
 Write-Host "  * Tick 'Start with Windows' in the app to start it automatically."
 Write-Host "  * Click 'SAVE TO MOUSE' after changing settings."
+Write-Host "  * To update it: Start menu > Update Aerox Lite (your settings are kept)."
 Write-Host "  * To remove it: Settings > Apps > Aerox Lite > Uninstall (or 'Uninstall Aerox Lite.bat')."
 try { Stop-Transcript | Out-Null } catch { }

@@ -54,7 +54,8 @@ Start-Sleep -Milliseconds 500
 
 $run = Get-ItemProperty -Path $RunKey -Name AeroxLite -ErrorAction SilentlyContinue
 if ($run) { Remove-ItemProperty -Path $RunKey -Name AeroxLite -ErrorAction SilentlyContinue; Write-Host "Autostart removed." }
-foreach ($lnk in (Join-Path $StartMenuDir "Aerox Lite.lnk"), (Join-Path $DesktopDir "Aerox Lite.lnk")) {
+foreach ($lnk in (Join-Path $StartMenuDir "Aerox Lite.lnk"), (Join-Path $StartMenuDir "Update Aerox Lite.lnk"),
+                 (Join-Path $DesktopDir "Aerox Lite.lnk")) {
     if (Test-Path $lnk) { Remove-Item $lnk -Force; Write-Host "Removed $lnk" }
 }
 if (Test-Path $UninstallKey) { Remove-Item $UninstallKey -Recurse -Force; Write-Host "Removed from Settings > Apps." }
@@ -72,6 +73,7 @@ if (Test-Path $InstallDir) {
 
 if ($choice -eq "2") {
     if (Test-Path $SettingsDir) { Remove-Item $SettingsDir -Recurse -Force; Write-Host "Settings removed." }
+    Remove-Item "$env:LOCALAPPDATA\AeroxLite-updater" -Recurse -Force -ErrorAction SilentlyContinue   # settings backups
     if ($pkg) {
         Write-Host "The folder $pkg will be deleted when you close this window."
         Write-Host "Done."

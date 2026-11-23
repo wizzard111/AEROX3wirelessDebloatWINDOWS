@@ -161,12 +161,14 @@ EXTRAS (OPTIONAL)
 UPDATING
 ---------------------------------------------------------------------
 
-  Double-click "Update Aerox Lite.bat" (in this folder). It checks GitHub
-  for a newer version, backs up your settings, installs the new version
-  over the old one (nothing of the old version is left) and starts
-  Aerox Lite again. Your settings, macros and lighting are kept.
+  Start menu -> "Update Aerox Lite" (the installer puts it there).
+  It checks GitHub for a newer version, backs up your settings, installs
+  the new version over the old one (nothing of the old version is left)
+  and starts Aerox Lite again. Your settings, macros and lighting are kept.
   If it says "up to date", there is nothing to do.
-  The backups of the settings are in %LOCALAPPDATA%\AeroxLite-updaterackups.
+  (Installed with an older version that has no such entry? Double-click
+  "Update Aerox Lite.bat" in the downloaded folder once.)
+  The backups of the settings are in %LOCALAPPDATA%\AeroxLite-updater\backups.
 
 
 ---------------------------------------------------------------------
