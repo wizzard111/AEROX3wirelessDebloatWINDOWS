@@ -16,6 +16,7 @@ STEP 1. UNZIP THE DOWNLOAD
   2. Open the new folder "AeroxLite". You will see:
        Install Aerox Lite.bat     <- the installer
        Uninstall Aerox Lite.bat   <- removes it again
+       Update Aerox Lite.bat      <- installs a newer version
        HOW-TO-INSTALL.txt         <- this guide
        app                        <- the program (no need to open it)
 
@@ -154,6 +155,18 @@ EXTRAS (OPTIONAL)
     - Directional sensitivity: needs the free Raw Accel driver
       (github.com/a1xd/rawaccel). Click "RAW ACCEL FOLDER", then
       "CALIBRATE", and follow the mini-game.
+
+
+---------------------------------------------------------------------
+UPDATING
+---------------------------------------------------------------------
+
+  Double-click "Update Aerox Lite.bat" (in this folder). It checks GitHub
+  for a newer version, backs up your settings, installs the new version
+  over the old one (nothing of the old version is left) and starts
+  Aerox Lite again. Your settings, macros and lighting are kept.
+  If it says "up to date", there is nothing to do.
+  The backups of the settings are in %LOCALAPPDATA%\AeroxLite-updaterackups.
 
 
 ---------------------------------------------------------------------
