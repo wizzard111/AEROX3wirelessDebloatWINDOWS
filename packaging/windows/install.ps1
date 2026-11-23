@@ -152,7 +152,7 @@ Step "Registering in Settings > Apps (for uninstalling)"
 $uninstall = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' + (Join-Path $InstallDir "uninstall.ps1") + '"'
 New-Item -Force $UninstallKey | Out-Null
 $props = @{
-    DisplayName = "Aerox Lite"; DisplayVersion = "5.1.0"; Publisher = "reflex"
+    DisplayName = "Aerox Lite"; DisplayVersion = "5.2.0"; Publisher = "reflex"
     DisplayIcon = ($icon -replace ',0$', ''); InstallLocation = $InstallDir; UninstallString = $uninstall
     URLInfoAbout = "https://github.com/wizzard111/AEROX3wirelessDebloatWINDOWS"
 }

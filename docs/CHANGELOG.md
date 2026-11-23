@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## V5.2.0
 
 - **Updater:** Start menu -> "Update Aerox Lite" (added by the installer; `Update Aerox Lite.bat` in the
   download for the first time). It checks GitHub for a newer version, backs up the settings, downloads
